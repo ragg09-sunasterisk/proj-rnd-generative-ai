@@ -16,10 +16,10 @@ jobs:
       pull-requests: write
       issues: write
       id-token: write
-      actions: read # Required for Claude to read CI results on PRs
+      actions: read
 
     steps:
-      - name: Add reaction to acknowledge comment
+      - name: Add eye reaction to acknowledge comment
         uses: actions/github-script@v7
         with:
           script: |
@@ -41,21 +41,14 @@ jobs:
         uses: anthropics/claude-code-action@v1
         with:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          additional_permissions: |
+            actions: read
           prompt: |
-            REPO: ${{ github.repository }}
-            PR NUMBER: ${{ github.event.issue.number }}
+            Review PR #${{ github.event.issue.number }}.
 
-            Please review this pull request and provide feedback on:
-            - Code quality and best practices
-            - Potential bugs or issues
-            - Performance considerations
-            - Security concerns
-            - Test coverage
+            1. Post TODO list: code quality, bugs, performance, security, tests, CLAUDE.md adherence, summary
+            2. Review using `gh pr diff/view`. Follow CLAUDE.md guidelines. Update TODO as you progress with `gh pr comment --edit-last`
+            3. Replace TODO list with final summary using `gh pr comment --edit-last`: assessment, findings, code issues, highlights, action items
 
-            Use the repository's CLAUDE.md for guidance on style and conventions. Be constructive and helpful in your feedback.
-
-            Use `gh pr comment` with your Bash tool to leave your review as a comment on the PR.
-
-          # See https://github.com/anthropics/claude-code-action/blob/main/docs/usage.md
-          # or https://docs.claude.com/en/docs/claude-code/sdk#command-line for available options
-          claude_args: '--allowed-tools "Bash(gh issue view:*),Bash(gh search:*),Bash(gh issue list:*),Bash(gh pr comment:*),Bash(gh pr diff:*),Bash(gh pr view:*),Bash(gh pr list:*)"'
+            Be constructive and specific.
+          claude_args: '--allowed-tools "Bash(gh issue view:*),Bash(gh issue comment:*),Bash(gh pr comment:*),Bash(gh pr diff:*),Bash(gh pr view:*),Bash(gh pr list:*)"'
